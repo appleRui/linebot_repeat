@@ -25,15 +25,10 @@ class LinebotController < ApplicationController
           case event.type
           when Line::Bot::Event::MessageType::Text
 
-            test =<<EOF
-　　　
-　　　　　　　#{event.message['text']}なんて言わないで
-
-            EOF
 
             message = {
               type: 'text',
-              text: test
+              text: nan
             }
             client.reply_message(event['replyToken'], message)
           end
@@ -42,4 +37,15 @@ class LinebotController < ApplicationController
 
       "OK"
     end
+
+    private
+
+    def nan
+      test =<<EOF
+　　　
+　　　　　　　#{event.message['text']}なんて言わないで
+
+            EOF
+    end
+
 end
