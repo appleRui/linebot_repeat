@@ -25,15 +25,32 @@ class LinebotController < ApplicationController
           case event.type
           when Line::Bot::Event::MessageType::Text
 
-            message = {
-              type: 'text',
-              text: event.message['text']
-            }
-            client.reply_message(event['replyToken'], message)
+            # message = {
+            #   type: 'text',
+            #   text: event.message['text']
+            # }
+            client.reply_message(event['replyToken'], templete)
           end
         end
       end
 
       "OK"
+    end
+
+    private
+
+    def templete
+      text =<<-EOF
+      #{event.message['text']}なんて言わないで
+      EOF
+
+      puts text
+
+      message{
+        type: text,
+        text: text
+      }
+
+      message
     end
 end
