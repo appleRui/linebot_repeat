@@ -2,19 +2,13 @@ class LinebotController < ApplicationController
 	require 'line/bot'
 	protect_from_forgery except: [:callback] # CSRF対策無効化
 
-    def client
-      @client ||= Line::Bot::Client.new { |config|
-        config.channel_secret = ENV["LINE_CHANNEL_SECRET"]
-        config.channel_token = ENV["LINE_CHANNEL_TOKEN"]
-      }
-    end
 
     def callback
       body = request.body.read
 
       signature = request.env['HTTP_X_LINE_SIGNATURE']
       unless client.validate_signature(body, signature)
-        halt 400, {'Content-Type' => 'text/plain'}, 'Bad Request'
+        return head :bad_request
       end
 
       events = client.parse_events_from(body)
@@ -25,32 +19,27 @@ class LinebotController < ApplicationController
           case event.type
           when Line::Bot::Event::MessageType::Text
 
-            # message = {
-            #   type: 'text',
-            #   text: event.message['text']
-            # }
+            message = {
+              type: 'text',
+              text: event.message['text']
+            }
             client.reply_message(event['replyToken'], templete)
           end
         end
       end
 
-      "OK"
+      head :ok
     end
 
     private
 
-    def templete
-      text =<<-EOF
-      #{event.message['text']}なんて言わないで
-      EOF
-
-      puts text
-
-      message{
-        type: text,
-        text: text
+    def client
+      @client ||= Line::Bot::Client.new { |config|
+        config.channel_secret = ENV["LINE_CHANNEL_SECRET"]
+        config.channel_token = ENV["LINE_CHANNEL_TOKEN"]
       }
-
-      message
     end
+
+   end
+
 end
